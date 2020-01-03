@@ -1,0 +1,56 @@
+hahha:
+  我是邱政12
+
+qqqq:
+  this is english
+
+aaa:
+  - array1
+  - array2
+
+server:
+  port:
+    - "9090:9090"
+    - "8088:8088"
+
+version: '3.1'
+services:
+  minio:
+    image: minio/minio
+    ports: ['9000:9000']
+    environment: [MINIO_ACCESS_KEY=root, MINIO_SECRET_KEY=123456789]
+    volumes: ['/data02/minio/data:/data', '/data02/minio/config:/root/.minio']
+    command: [server, /data]
+    networks:
+      - cgfdatacube_cgf-net
+    container_name: minio
+  elasticsearch:
+    image: elasticsearch:7.3.0
+    ports: ['9200:9200', '9300:9300']
+    environment: [discovery.type=single-node]
+    volumes: ['/data02/es/data:/usr/share/elasticsearch/data']
+    networks:
+      - cgfdatacube_cgf-net
+    container_name: es
+  cgf-geoportal:
+    image: geoportal/geoportal:v1
+    ports: ['8804:8804']
+    environment: [spring.profiles.active=test]
+    volumes:
+      - '/root/usr/cgf-platform/cgf-geoportal/files:/root/usr/cgf-platform/cgf-geoportal/files'
+      - '/root/usr/cgf-platform/cgf-geoportal/test:/root/usr/cgf-platform/cgf-geoportal/test'
+      - '/home/sharefile:/home/sharefile'
+    depends_on:
+      - minio
+      - elasticsearch
+    networks:
+      - cgfdatacube_cgf-net
+    container_name: cgf-geoportal
+
+networks:
+  cgfdatacube_cgf-net:
+    external:
+      true
+
+
+
